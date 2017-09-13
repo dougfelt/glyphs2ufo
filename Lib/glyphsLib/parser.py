@@ -245,11 +245,15 @@ class Writer(object):
     @staticmethod
     def escape_text(text):
       """Quote and escape if it doesn't look like a 'symbol'."""
-      data = Writer._escape_re.sub(Writer._escape_fn, data)
-      return data if Writer._sym_re.match(data) else '"' + data + '"'
+      text = Writer._escape_re.sub(Writer._escape_fn, text)
+      return text if Writer._sym_re.match(text) else '"' + text + '"'
 
     def _write_atom(self, data):
-      self.out.write(self.escape_text(data) if self.escape else data)
+      try:
+        self.out.write(self.escape_text(data) if self.escape else data)
+      except UnicodeEncodeError as e:
+        logger.debug('could not write unescaped data: "%s", escaping' % data)
+        self.out.write(self.escape_text(data));
 
 
 def load(fp):
